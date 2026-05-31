@@ -1,0 +1,89 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 55;
+}
+
+.hire-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 65;
+  background: #fff;
+  border: 2px solid #333;
+  padding: 0;
+  font-family: monospace;
+  min-width: 380px;
+}
+
+.hire-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #1a1a2e;
+  color: #fff;
+  font-weight: bold;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.close-btn:hover { color: #fff; }
+
+.full-warn {
+  padding: 8px 16px;
+  background: #fee;
+  color: #c00;
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.pool {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #ddd;
+}
+
+.unit-card {
+  background: #fafafa;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unit-card.affordable { background: #f0fff4; }
+
+.unit-name  { font-weight: bold; font-size: 0.9rem; }
+.unit-stats { font-size: 0.82rem; color: #555; display: flex; gap: 12px; }
+
+.unit-cost {
+  display: flex;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.lacking { color: #c0392b; font-weight: bold; }
+
+.hire-btn {
+  margin-top: 4px;
+  padding: 6px;
+  font-family: monospace;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.hire-btn:disabled { opacity: 0.4; cursor: default; }

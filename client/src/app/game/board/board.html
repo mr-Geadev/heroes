@@ -1,0 +1,45 @@
+<div class="board-grid">
+  @for (cell of state.board; track cell.index) {
+    <div
+      class="cell"
+      [style.grid-row]="cellRow(cell.index)"
+      [style.grid-column]="cellCol(cell.index)"
+      [style.background]="cellBg(cell)"
+      [style.border-color]="ownerBorder(cell)"
+      (click)="onCellClick(cell.index, $event)"
+    >
+      <span class="cell-icon">{{ cellIcon(cell) }}</span>
+      <span class="cell-idx">{{ cell.index }}</span>
+
+      @if (cell.type === 'dungeon' && !cell.dungeonCleared) {
+        <span class="garrison">⚔{{ dungeonStrength(cell) }}</span>
+      }
+      @if (cell.type === 'resource' && cell.garrison?.length) {
+        <span class="garrison">⚔{{ dungeonStrength(cell) }}</span>
+      }
+
+      <div class="tokens">
+        @for (p of playersOnCell(cell.index); track p.id) {
+          <span class="token" [style.background]="p.color" [title]="p.name">●</span>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="center-panel">
+
+    <div class="center-scores">
+      <div class="center-title">Очки</div>
+      @for (p of state.players; track p.id) {
+        <div class="score-row" [style.color]="p.color">
+          <span class="score-name">{{ p.name }}</span>
+          <span class="score-val">{{ p.score }} ★</span>
+        </div>
+      }
+      <div class="turn-info">Ход {{ state.turnNumber }}</div>
+      @if (state.lastRoll) { <div class="last-roll">🎲 {{ state.lastRoll }}</div> }
+    </div>
+
+
+  </div>
+</div>

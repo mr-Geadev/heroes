@@ -1,0 +1,158 @@
+<div class="modal-backdrop"></div>
+<div class="modal-box">
+  @if (activePlayerName) {
+    <div class="player-badge">{{ activePlayerName }}</div>
+  }
+
+  @switch (cell.type) {
+
+    @case ('resource') {
+      <div class="cell-header">
+        <span class="cell-icon">{{ cellIcon() }}</span>
+        <div>
+          <div class="cell-title">{{ resourceTypeName() }}</div>
+          @if (ownerName()) {
+            <div class="cell-sub">Владелец: {{ ownerName() }}</div>
+          } @else {
+            <div class="cell-sub">Нейтральный</div>
+          }
+        </div>
+      </div>
+      <div class="garrison-row">⚔ Охрана: {{ garrisonDesc() }}</div>
+
+      @if (combatLog.length) {
+        <div class="combat-log">
+          @for (e of combatLog; track $index) { <div>{{ e }}</div> }
+        </div>
+      }
+
+      @if (!readonly) {
+        <div class="actions">
+          <button class="btn-action" (click)="action.emit('capture')"
+                  [disabled]="!myArmy.length">⚔ Захватить</button>
+          <button class="btn-skip" (click)="action.emit('skip')">Пропустить →</button>
+        </div>
+        @for (p of otherPlayers; track p.id) {
+          <button class="btn-join" (click)="joinRequest.emit(p.id)">🤝 Помощь: {{ p.name }}</button>
+        }
+        @if (!myArmy.length) { <p class="warn">Нужна армия для захвата</p> }
+      } @else {
+        <p class="warn">⏳ Ждём решения игрока...</p>
+      }
+    }
+
+    @case ('dungeon') {
+      <div class="cell-header">
+        <span class="cell-icon">{{ cellIcon() }}</span>
+        <div>
+          <div class="cell-title">Данж</div>
+          <div class="cell-sub">{{ cell.name ?? 'Клетка ' + cell.index }}</div>
+        </div>
+      </div>
+      <div class="garrison-row">⚔ Охрана: {{ garrisonDesc() }}</div>
+
+      @if (combatLog.length) {
+        <div class="combat-log">
+          @for (e of combatLog; track $index) { <div>{{ e }}</div> }
+        </div>
+      }
+
+      @if (!readonly) {
+        <div class="actions">
+          <button class="btn-action" (click)="action.emit('dungeon')"
+                  [disabled]="!myArmy.length">⚔️ Войти в данж</button>
+          <button class="btn-skip" (click)="action.emit('skip')">Пропустить →</button>
+        </div>
+        @for (p of otherPlayers; track p.id) {
+          <button class="btn-join" (click)="joinRequest.emit(p.id)">🤝 Помощь: {{ p.name }}</button>
+        }
+        @if (!myArmy.length) { <p class="warn">Нужна армия для данжа</p> }
+      } @else {
+        <p class="warn">⏳ Ждём решения игрока...</p>
+      }
+    }
+
+    @case ('event') {
+      <div class="cell-header">
+        <span class="cell-icon">{{ cellIcon() }}</span>
+        <div class="cell-title">Случайное событие</div>
+      </div>
+      @if (pendingEvent) {
+        <div class="event-name">{{ pendingEvent.name }}</div>
+        <div class="event-effect">
+          @if (pendingEvent.moveDelta) {
+            <span class="effect-item">+{{ pendingEvent.moveDelta }} клетки вперёд</span>
+          }
+          @if (pendingEvent.wood) {
+            <span class="effect-item" [class.positive]="pendingEvent.wood > 0" [class.negative]="pendingEvent.wood < 0">
+              🪵 {{ pendingEvent.wood > 0 ? '+' : '' }}{{ pendingEvent.wood }}
+            </span>
+          }
+          @if (pendingEvent.stone) {
+            <span class="effect-item" [class.positive]="pendingEvent.stone > 0" [class.negative]="pendingEvent.stone < 0">
+              🪨 {{ pendingEvent.stone > 0 ? '+' : '' }}{{ pendingEvent.stone }}
+            </span>
+          }
+          @if (pendingEvent.gold) {
+            <span class="effect-item" [class.positive]="pendingEvent.gold > 0" [class.negative]="pendingEvent.gold < 0">
+              💰 {{ pendingEvent.gold > 0 ? '+' : '' }}{{ pendingEvent.gold }}
+            </span>
+          }
+          @if (pendingEvent.deserterUnit !== undefined) {
+            @if (pendingEvent.deserterUnit) {
+              <span class="effect-item negative">−1× {{ pendingEvent.deserterUnit }}</span>
+            } @else {
+              <span class="effect-item">армия пуста</span>
+            }
+          }
+          @if (pendingEvent.scoreDelta) {
+            <span class="effect-item positive">+{{ pendingEvent.scoreDelta }} ★</span>
+          }
+        </div>
+      } @else {
+        <div class="event-desc">{{ eventDescription }}</div>
+      }
+      @if (!readonly) {
+        <div class="actions">
+          <button class="btn-action" (click)="action.emit('skip')">Продолжить →</button>
+        </div>
+      }
+    }
+
+    @case ('start') {
+      <div class="cell-header">
+        <span class="cell-icon">{{ cellIcon() }}</span>
+        <div>
+          <div class="cell-title">{{ cell.name ?? 'Город' }}</div>
+          <div class="cell-sub">Владелец: {{ ownerName() }}</div>
+        </div>
+      </div>
+
+      @if (!readonly) {
+        <div class="actions">
+          <button class="btn-action" (click)="action.emit('capture')"
+                  [disabled]="!myArmy.length">⚔ Атаковать</button>
+          <button class="btn-skip" (click)="action.emit('skip')">Пропустить →</button>
+        </div>
+        @for (p of otherPlayers; track p.id) {
+          <button class="btn-join" (click)="joinRequest.emit(p.id)">🤝 Помощь: {{ p.name }}</button>
+        }
+        @if (!myArmy.length) { <p class="warn">Нужна армия для атаки</p> }
+      } @else {
+        <p class="warn">⏳ Ждём решения игрока...</p>
+      }
+    }
+
+    @default {
+      <div class="cell-header">
+        <span class="cell-icon">🏁</span>
+        <div class="cell-title">Стартовая клетка</div>
+      </div>
+      <div class="actions">
+        <button class="btn-action" (click)="action.emit('skip')">Продолжить →</button>
+      </div>
+    }
+
+  }
+
+</div>

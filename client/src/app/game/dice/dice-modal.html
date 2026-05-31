@@ -1,0 +1,26 @@
+<div class="dice-backdrop"></div>
+<div class="dice-modal">
+  <h3>{{ title }}</h3>
+
+  <div class="dice-area" (click)="doRoll()" [class.clickable]="!done() && !rolling()">
+    <div class="die" [class.rolling]="rolling()" [class.revealed]="done()">
+      {{ die1() ?? '?' }}
+    </div>
+    <div class="die" [class.rolling]="rolling()" [class.revealed]="done()">
+      {{ die2() ?? '?' }}
+    </div>
+  </div>
+
+  @if (!done() && !rolling()) {
+    <p class="hint">Нажмите на кубики, чтобы бросить</p>
+  }
+  @if (rolling()) {
+    <p class="hint">...</p>
+  }
+  @if (done()) {
+    <p class="result">
+      Итого: <strong>{{ total }}</strong>
+      @if (hasRing) { <span class="ring-bonus">+1 (кольцо)</span> }
+    </p>
+  }
+</div>

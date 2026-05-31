@@ -1,0 +1,283 @@
+<div class="modal-backdrop" (click)="cancelled.emit()"></div>
+<div class="modal-box">
+
+  <!-- ── Header ── -->
+  <div class="trade-header">
+    @if (!incomingOffer || !editMode) {
+      <span>🤝 {{ editMode ? 'Предложить сделку' : 'Входящее предложение' }}</span>
+    } @else {
+      <span>↩ Встречное предложение</span>
+    }
+    <button class="close-btn" (click)="cancelled.emit()">✕</button>
+  </div>
+
+  <!-- ── Player selector (edit mode only) ── -->
+  @if (editMode) {
+    <label class="field-row">
+      <span>Кому:</span>
+      <select [(ngModel)]="targetId">
+        @for (p of players; track p.id) {
+          <option [value]="p.id">{{ p.name }}</option>
+        }
+      </select>
+    </label>
+  } @else {
+    <div class="sender-label">От: <strong>{{ senderPlayer?.name }}</strong></div>
+  }
+
+  <!-- ── 4-column layout ── -->
+  <div class="four-cols">
+
+    <!-- COL 1: My inventory (clickable in edit mode) -->
+    <div class="inv-col">
+      <div class="col-title">Мои вещи</div>
+
+      <div class="sub-label">Ресурсы</div>
+      <div class="inv-item" [class.clickable]="editMode" (click)="addGiveResource('wood')">
+        🪵 {{ me.resources.wood }}
+      </div>
+      <div class="inv-item" [class.clickable]="editMode" (click)="addGiveResource('stone')">
+        🪨 {{ me.resources.stone }}
+      </div>
+      <div class="inv-item" [class.clickable]="editMode" (click)="addGiveResource('gold')">
+        💰 {{ me.resources.gold }}
+      </div>
+
+      @if (myCells.length > 0) {
+        <div class="sub-label">Клетки</div>
+        @for (cell of myCells; track cell.index) {
+          <div class="inv-item" [class.clickable]="editMode"
+               [class.selected]="giveCellSet.has(cell.index)"
+               (click)="toggleGiveCell(cell.index)">
+            {{ cellIcon(cell) }} {{ cellName(cell) }}
+          </div>
+        }
+      }
+
+      @if (me.artifacts.length > 0) {
+        <div class="sub-label">Артефакты</div>
+        @for (a of me.artifacts; track a.id) {
+          <div class="inv-item" [class.clickable]="editMode"
+               [class.selected]="giveArtSet.has(a.id)"
+               (click)="toggleGiveArt(a.id)">
+            🏺 {{ a.name }}
+          </div>
+        }
+      }
+
+      <div class="sub-label">Обещания</div>
+      @for (opt of promiseOptions; track opt.type) {
+        <div class="inv-item" [class.clickable]="editMode"
+             [class.selected]="givePromiseSet.has(opt.type)"
+             (click)="toggleGivePromise(opt.type)">
+          {{ opt.label }}
+        </div>
+      }
+    </div>
+
+    <!-- COL 2: My offer -->
+    <div class="offer-col offer-give">
+      <div class="col-title">{{ editMode ? 'Я даю' : 'Я отдаю' }}</div>
+
+      @if (editMode) {
+        @if (giveWood > 0) {
+          <div class="offer-item">
+            <span>🪵</span>
+            <input type="range" [(ngModel)]="giveWood" min="1" [max]="me.resources.wood" />
+            <span class="qty">{{ giveWood }}</span>
+            <button class="remove-btn" (click)="removeGiveResource('wood')">✕</button>
+          </div>
+        }
+        @if (giveStone > 0) {
+          <div class="offer-item">
+            <span>🪨</span>
+            <input type="range" [(ngModel)]="giveStone" min="1" [max]="me.resources.stone" />
+            <span class="qty">{{ giveStone }}</span>
+            <button class="remove-btn" (click)="removeGiveResource('stone')">✕</button>
+          </div>
+        }
+        @if (giveGold > 0) {
+          <div class="offer-item">
+            <span>💰</span>
+            <input type="range" [(ngModel)]="giveGold" min="1" [max]="me.resources.gold" />
+            <span class="qty">{{ giveGold }}</span>
+            <button class="remove-btn" (click)="removeGiveResource('gold')">✕</button>
+          </div>
+        }
+        @for (idx of giveCellSet; track idx) {
+          @if (board[idx]; as cell) {
+            <div class="offer-item">
+              <span>{{ cellIcon(cell) }} {{ cellName(cell) }}</span>
+              <button class="remove-btn" (click)="toggleGiveCell(idx)">✕</button>
+            </div>
+          }
+        }
+        @for (aid of giveArtSet; track aid) {
+          <div class="offer-item">
+            <span>🏺 {{ artifactName(me.artifacts, aid) }}</span>
+            <button class="remove-btn" (click)="toggleGiveArt(aid)">✕</button>
+          </div>
+        }
+        @for (type of givePromiseSet; track type) {
+          <div class="offer-item">
+            <span>{{ promiseLabel(type) }}</span>
+            <button class="remove-btn" (click)="toggleGivePromise(type)">✕</button>
+          </div>
+        }
+        @if (giveWood === 0 && giveStone === 0 && giveGold === 0 && giveCellSet.size === 0 && giveArtSet.size === 0 && givePromiseSet.size === 0) {
+          <div class="empty-hint">← кликни вещь</div>
+        }
+      } @else {
+        <!-- receive mode: col 2 = what I give = offer.want (what sender wanted from me) -->
+        @if (incomingOffer!.want.wood > 0)  { <div class="offer-ro">🪵 {{ incomingOffer!.want.wood }}</div> }
+        @if (incomingOffer!.want.stone > 0) { <div class="offer-ro">🪨 {{ incomingOffer!.want.stone }}</div> }
+        @if (incomingOffer!.want.gold > 0)  { <div class="offer-ro">💰 {{ incomingOffer!.want.gold }}</div> }
+        @for (cell of offerWantCells; track cell.index) {
+          <div class="offer-ro">{{ cellIcon(cell) }} {{ cellName(cell) }}</div>
+        }
+        @for (name of offerWantArts; track name) {
+          <div class="offer-ro">🏺 {{ name }}</div>
+        }
+        @for (type of incomingOffer!.want.promises; track type) {
+          <div class="offer-ro">{{ promiseLabel(type) }}</div>
+        }
+        @if (!incomingOffer!.want.wood && !incomingOffer!.want.stone && !incomingOffer!.want.gold && offerWantCells.length === 0 && offerWantArts.length === 0 && !incomingOffer!.want.promises.length) {
+          <div class="empty-hint">—</div>
+        }
+      }
+    </div>
+
+    <!-- COL 3: Their request -->
+    <div class="offer-col offer-want">
+      <div class="col-title">{{ editMode ? 'Я прошу' : 'Я получаю' }}</div>
+
+      @if (editMode) {
+        @if (wantWood > 0) {
+          <div class="offer-item">
+            <span>🪵</span>
+            <input type="range" [(ngModel)]="wantWood" min="1" [max]="theirPlayer?.resources?.wood ?? 1" />
+            <span class="qty">{{ wantWood }}</span>
+            <button class="remove-btn" (click)="removeWantResource('wood')">✕</button>
+          </div>
+        }
+        @if (wantStone > 0) {
+          <div class="offer-item">
+            <span>🪨</span>
+            <input type="range" [(ngModel)]="wantStone" min="1" [max]="theirPlayer?.resources?.stone ?? 1" />
+            <span class="qty">{{ wantStone }}</span>
+            <button class="remove-btn" (click)="removeWantResource('stone')">✕</button>
+          </div>
+        }
+        @if (wantGold > 0) {
+          <div class="offer-item">
+            <span>💰</span>
+            <input type="range" [(ngModel)]="wantGold" min="1" [max]="theirPlayer?.resources?.gold ?? 1" />
+            <span class="qty">{{ wantGold }}</span>
+            <button class="remove-btn" (click)="removeWantResource('gold')">✕</button>
+          </div>
+        }
+        @for (idx of wantCellSet; track idx) {
+          @if (board[idx]; as cell) {
+            <div class="offer-item">
+              <span>{{ cellIcon(cell) }} {{ cellName(cell) }}</span>
+              <button class="remove-btn" (click)="toggleWantCell(idx)">✕</button>
+            </div>
+          }
+        }
+        @for (aid of wantArtSet; track aid) {
+          <div class="offer-item">
+            <span>🏺 {{ artifactName(theirPlayer?.artifacts, aid) }}</span>
+            <button class="remove-btn" (click)="toggleWantArt(aid)">✕</button>
+          </div>
+        }
+        @for (type of wantPromiseSet; track type) {
+          <div class="offer-item">
+            <span>{{ promiseLabel(type) }}</span>
+            <button class="remove-btn" (click)="toggleWantPromise(type)">✕</button>
+          </div>
+        }
+        @if (wantWood === 0 && wantStone === 0 && wantGold === 0 && wantCellSet.size === 0 && wantArtSet.size === 0 && wantPromiseSet.size === 0) {
+          <div class="empty-hint">← кликни вещь</div>
+        }
+      } @else {
+        <!-- receive mode: col 3 = what I receive = offer.give (what sender gives me) -->
+        @if (incomingOffer!.give.wood > 0)  { <div class="offer-ro">🪵 {{ incomingOffer!.give.wood }}</div> }
+        @if (incomingOffer!.give.stone > 0) { <div class="offer-ro">🪨 {{ incomingOffer!.give.stone }}</div> }
+        @if (incomingOffer!.give.gold > 0)  { <div class="offer-ro">💰 {{ incomingOffer!.give.gold }}</div> }
+        @for (cell of offerGiveCells; track cell.index) {
+          <div class="offer-ro">{{ cellIcon(cell) }} {{ cellName(cell) }}</div>
+        }
+        @for (name of offerGiveArts; track name) {
+          <div class="offer-ro">🏺 {{ name }}</div>
+        }
+        @for (type of incomingOffer!.give.promises; track type) {
+          <div class="offer-ro">{{ promiseLabel(type) }}</div>
+        }
+        @if (!incomingOffer!.give.wood && !incomingOffer!.give.stone && !incomingOffer!.give.gold && offerGiveCells.length === 0 && offerGiveArts.length === 0 && !incomingOffer!.give.promises.length) {
+          <div class="empty-hint">—</div>
+        }
+      }
+    </div>
+
+    <!-- COL 4: Their inventory (clickable in edit mode) -->
+    <div class="inv-col">
+      <div class="col-title">{{ theirPlayer?.name ?? '...' }}</div>
+
+      <div class="sub-label">Ресурсы</div>
+      <div class="inv-item" [class.clickable]="editMode" (click)="addWantResource('wood')">
+        🪵 {{ theirPlayer?.resources?.wood ?? 0 }}
+      </div>
+      <div class="inv-item" [class.clickable]="editMode" (click)="addWantResource('stone')">
+        🪨 {{ theirPlayer?.resources?.stone ?? 0 }}
+      </div>
+      <div class="inv-item" [class.clickable]="editMode" (click)="addWantResource('gold')">
+        💰 {{ theirPlayer?.resources?.gold ?? 0 }}
+      </div>
+
+      @if (theirCells.length > 0) {
+        <div class="sub-label">Клетки</div>
+        @for (cell of theirCells; track cell.index) {
+          <div class="inv-item" [class.clickable]="editMode"
+               [class.selected]="wantCellSet.has(cell.index)"
+               (click)="toggleWantCell(cell.index)">
+            {{ cellIcon(cell) }} {{ cellName(cell) }}
+          </div>
+        }
+      }
+
+      @if (theirPlayer?.artifacts?.length) {
+        <div class="sub-label">Артефакты</div>
+        @for (a of theirPlayer!.artifacts; track a.id) {
+          <div class="inv-item" [class.clickable]="editMode"
+               [class.selected]="wantArtSet.has(a.id)"
+               (click)="toggleWantArt(a.id)">
+            🏺 {{ a.name }}
+          </div>
+        }
+      }
+
+      <div class="sub-label">Обещания</div>
+      @for (opt of promiseOptions; track opt.type) {
+        <div class="inv-item" [class.clickable]="editMode"
+             [class.selected]="wantPromiseSet.has(opt.type)"
+             (click)="toggleWantPromise(opt.type)">
+          {{ opt.label }}
+        </div>
+      }
+    </div>
+
+  </div>
+
+  <!-- ── Actions ── -->
+  <div class="modal-actions">
+    @if (editMode) {
+      <button class="btn-submit" (click)="submit()" [disabled]="!isValid()">📤 Отправить</button>
+      <button class="btn-cancel" (click)="cancelled.emit()">Отмена</button>
+    } @else {
+      <button class="btn-accept"  (click)="accepted.emit()">✓ Принять</button>
+      <button class="btn-counter" (click)="switchToCounter()">↩ Встречное</button>
+      <button class="btn-reject"  (click)="rejected.emit()">✕ Отклонить</button>
+    }
+  </div>
+
+</div>

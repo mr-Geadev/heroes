@@ -1,0 +1,400 @@
+<!-- ─── Init roll — определение очерёдности ходов ───────────────────────── -->
+@if (state()?.phase === 'init_roll') {
+  @if (!iHaveInitRolled()) {
+    <app-dice-modal [hasRing]="false" title="🎲 Определение очерёдности хода" (rolled)="onInitRoll($event)" />
+  } @else {
+    <div class="observer-overlay">
+      <div class="init-roll-box">
+        <div class="init-roll-title">🎲 Очерёдность ходов</div>
+        <table class="init-roll-table">
+          @for (row of initRollStatus(); track row.id) {
+            <tr>
+              <td [style.color]="row.color">
+                {{ row.name }}@if (row.id === ws.playerId()) { <span class="op-you">(вы)</span> }
+              </td>
+              <td class="irt-roll">{{ row.roll ?? '...' }}</td>
+            </tr>
+          }
+        </table>
+        @if (allInitRolled()) {
+          <div class="init-roll-countdown">Игра начнётся через {{ initCountdown() }}...</div>
+        } @else {
+          <div class="init-roll-wait">Ожидаем броска от других игроков...</div>
+        }
+      </div>
+    </div>
+  }
+}
+
+<!-- ─── Dice modal — всем видна при phase='roll' ───────────────────────────── -->
+@if (state()?.phase === 'roll') {
+  @if (isMyTurn()) {
+    <app-dice-modal [hasRing]="hasRing()" (rolled)="onDiceRolled($event)" />
+  } @else {
+    <div class="observer-overlay">
+      <div class="observer-box">🎲 {{ curPlayer()?.name }} бросает кубик...</div>
+    </div>
+  }
+}
+
+<!-- ─── Cell action modal — всем видна при phase='cell' ──────────────────── -->
+@if (state()?.phase === 'cell' && curCell() && cellModalReady()) {
+  <app-cell-action-modal
+    [cell]="curCell()!"
+    [players]="state()!.players"
+    [myArmy]="isMyTurn() ? myArmyCompact() : []"
+    [otherPlayers]="isMyTurn() ? otherActivePlayers() : []"
+    [eventDescription]="eventDescription()"
+    [pendingEvent]="state()!.pendingEvent ?? null"
+    [combatLog]="[]"
+    [readonly]="!isMyTurn()"
+    [activePlayerName]="isMyTurn() ? '' : (curPlayer()?.name ?? '')"
+    (action)="onCellAction($event)"
+    (joinRequest)="onRequestJoint($event)"
+  />
+}
+
+<!-- ─── Joint battle request overlay ─────────────────────────────────────── -->
+@if (state()?.phase === 'joint_request') {
+  <div class="joint-overlay">
+    <div class="joint-box">
+      @if (isJointRequester()) {
+        <div class="joint-title">🤝 Ждём ответа союзника...</div>
+      } @else if (isJointTarget()) {
+        <div class="joint-title">🤝 Запрос о помощи</div>
+        <div class="joint-msg">{{ jointRequesterName() }} просит вас помочь в бою</div>
+        <div class="joint-actions">
+          <button class="btn-joint-accept" (click)="onAcceptJoint()">✅ Принять</button>
+          <button class="btn-joint-decline" (click)="onDeclineJoint()">❌ Отклонить</button>
+        </div>
+      } @else {
+        <div class="joint-title">⏳ {{ jointRequesterName() }} запрашивает помощь...</div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ─── Battle modal — всем видна при phase='combat' ────────────────────── -->
+@if (state()?.phase === 'combat' && state()?.combatData) {
+  <app-battle-modal
+    [data]="state()!.combatData!"
+    [isMine]="isMyTurn()"
+    [activePlayerName]="isMyTurn() ? '' : (curPlayer()?.name ?? '')"
+    (done)="onBattleDone()"
+  />
+}
+
+<!-- ─── Dungeon reward popup ─────────────────────────────────────────────── -->
+@if (dungeonRewardPopup(); as reward) {
+  <div class="dungeon-reward-backdrop" (click)="dungeonRewardPopup.set(null)"></div>
+  <div class="dungeon-reward-box">
+    <div class="dungeon-reward-title">🏆 Данж пройден!</div>
+    <div class="dungeon-reward-items">
+      @if (reward.resources.wood)  { <div class="reward-item">🪵 {{ reward.resources.wood }}</div> }
+      @if (reward.resources.stone) { <div class="reward-item">🪨 {{ reward.resources.stone }}</div> }
+      @if (reward.resources.gold)  { <div class="reward-item">💰 {{ reward.resources.gold }}</div> }
+      <div class="reward-item">⭐ +{{ reward.score }} очков</div>
+      @if (reward.artifact) {
+        <div class="reward-item reward-artifact">🏺 {{ reward.artifact.name }}</div>
+      }
+    </div>
+    <button class="reward-close" (click)="dungeonRewardPopup.set(null)">Забрать →</button>
+  </div>
+}
+
+
+<!-- ─── Trade modal (send) ────────────────────────────────────────────────── -->
+@if (showTradeModal() && me()) {
+  <app-trade-modal
+    [me]="me()!"
+    [players]="otherPlayers()"
+    [board]="state()!.board"
+    [turnNumber]="state()!.turnNumber"
+    [initialTargetId]="tradeTargetId()"
+    (submitted)="submitOffer($event)"
+    (cancelled)="closeTrade()"
+  />
+}
+
+<!-- ─── Trade modal (receive / counter) ──────────────────────────────────── -->
+@if (incomingOffer(); as offer) {
+  <app-trade-modal
+    [me]="me()!"
+    [players]="state()!.players"
+    [board]="state()!.board"
+    [turnNumber]="state()!.turnNumber"
+    [incomingOffer]="offer"
+    (accepted)="acceptOffer()"
+    (rejected)="rejectOffer()"
+    (submitted)="counterOffer($event)"
+    (cancelled)="rejectOffer()"
+  />
+}
+
+<!-- ─── Victory overlay ───────────────────────────────────────────────────── -->
+@if (winner(); as w) {
+  <div class="victory-overlay">
+    <div class="victory-box">
+      <div class="victory-crown">🏆</div>
+      <h1 [style.color]="w.color">{{ w.name }} победил!</h1>
+      <p>{{ w.score }} очков</p>
+      @for (p of state()!.players; track p.id) {
+        <div class="final-score" [style.color]="p.color">
+          {{ p.name }}: {{ p.score }}★
+          (🪵{{ p.resources.wood }} 🪨{{ p.resources.stone }} 💰{{ p.resources.gold }})
+        </div>
+      }
+    </div>
+  </div>
+}
+
+@if (state(); as gs) {
+  <div class="game-screen">
+
+    <header class="top-bar">
+      <span>Ход {{ gs.turnNumber }}/{{ gs.maxTurns }}</span>
+      <span>Ходит: <strong [style.color]="curPlayer()!.color">{{ curPlayer()!.name }}</strong></span>
+      @if (gs.lastRoll) { <span class="dice-badge">🎲 {{ gs.lastRoll }}</span> }
+      @if (isMyTurn()) { <span class="my-turn-badge">ВАШ ХОД</span> }
+    </header>
+
+    <main class="main-area">
+
+      <!-- Left: my stats -->
+      <aside class="player-panel">
+        @if (me(); as p) {
+          <div class="panel-title" [style.color]="p.color">{{ p.name }}</div>
+
+          <section class="section">
+            <div class="section-label">Ресурсы</div>
+            <div class="res-row">🪵 {{ p.resources.wood }}<span class="income">(+{{ myIncome().wood }})</span></div>
+            <div class="res-row">🪨 {{ p.resources.stone }}<span class="income">(+{{ myIncome().stone }})</span></div>
+            <div class="res-row">💰 {{ p.resources.gold }}<span class="income">(+{{ myIncome().gold }})</span></div>
+          </section>
+
+          <section class="section">
+            <div class="section-label">Армия ({{ myArmyCompact().length }}/5)</div>
+            <div class="army-slots">
+              @for (slot of armySlots(); track $index; let i = $index) {
+                <div class="army-slot"
+                  [class.occupied]="!!slot"
+                  [class.drag-over]="!!dragSrc() && !(dragSrc()!.kind === 'army' && dragSrc()!.idx === i)"
+                  [attr.draggable]="canRearrangeArmy() && !!slot ? true : null"
+                  (dragstart)="onDragStart({kind:'army', idx:i}, $event)"
+                  (dragend)="dragSrc.set(null)"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="$event.preventDefault()"
+                  (drop)="onDrop({kind:'army', idx:i}, $event)">
+                  @if (slot) {
+                    <div class="army-slot-name">{{ slot.count }}× {{ slot.unit.name }}</div>
+                    <div class="army-slot-stats">❤{{ slot.unit.hp }}/{{ slot.unit.maxHp }} ⚔{{ slot.unit.damageMin }}–{{ slot.unit.damageMax }}</div>
+                  } @else {
+                    <div class="army-slot-empty">—</div>
+                  }
+                </div>
+              }
+            </div>
+          </section>
+
+          @if (myOwnedCells().length > 0) {
+            <section class="section">
+              <div class="section-label">Клетки</div>
+              @for (cell of myOwnedCells(); track cell.index) {
+                <div class="cell-row"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="$event.preventDefault()"
+                  (drop)="onDropToCell(cell.index, $event)">
+                  <span class="cell-row-icon">{{ cellIcon(cell) }} {{ cell.name }}</span>
+                  @if (garrisonCount(cell.index) > 0) {
+                    <span class="cell-row-garrison">⚔ {{ garrisonCount(cell.index) }}</span>
+                  }
+                  <button class="cell-row-btn" (click)="openGarrisonModal(cell.index)">⚔</button>
+                </div>
+              }
+            </section>
+          }
+
+          @if (p.artifacts.length > 0) {
+            <section class="section">
+              <div class="section-label">Артефакты</div>
+              @for (a of p.artifacts; track a.id) {
+                <div class="artifact-row" [title]="a.effect">{{ a.name }}</div>
+              }
+            </section>
+          }
+
+          <section class="section">
+            <div class="section-label">Очки</div>
+            <div class="score-big">{{ p.score }} ★</div>
+          </section>
+
+          @if (myPromises().length > 0) {
+            <section class="section">
+              <div class="section-label">Обещания</div>
+              @for (pr of myPromises(); track $index) {
+                <div class="promise-row">
+                  @if (pr.from === ws.playerId()) {
+                    <span class="promise-dir">→ {{ senderName(pr.to) }}:</span>
+                  } @else {
+                    <span class="promise-dir">← {{ senderName(pr.from) }}:</span>
+                  }
+                  {{ promiseLabels[pr.type] }}
+                </div>
+              }
+            </section>
+          }
+
+          <button class="btn-surrender" (click)="doSurrender()">🏳 Сдаться</button>
+        }
+      </aside>
+
+      <!-- Board + hire pool -->
+      <div class="board-column">
+
+        <!-- Hire pool bar -->
+        <div class="hire-bar">
+          <div class="hire-bar-header">
+            <span class="hire-bar-title">🛒 Пул найма</span>
+            @if (isMyTurn() && gs.phase !== 'combat' && gs.phase !== 'init_roll') {
+              <button class="btn-refresh"
+                [disabled]="!canAffordRefresh()"
+                (click)="onPoolRefreshed()"
+                [title]="'Обновить: ' + refreshCost + '🪵 ' + refreshCost + '🪨 ' + refreshCost + '💰'">
+                ↻ {{ refreshCost }}🪵 {{ refreshCost }}🪨 {{ refreshCost }}💰
+              </button>
+            }
+          </div>
+          <div class="hire-bar-slots">
+            @for (slot of gs.hirePool; track slot.unit.id; let i = $index) {
+              <div class="hb-card" [class.affordable]="isMyTurn() && canAffordSlot(slot)">
+                <div class="hb-name">{{ slot.unit.name }} ×{{ slot.count }}</div>
+                <div class="hb-stats">❤{{ slot.unit.hp }} ⚔{{ slot.unit.damageMin }}–{{ slot.unit.damageMax }}</div>
+                <div class="hb-cost">
+                  @if (hireTotalCost(slot).wood)  { <span [class.lack]="(me()?.resources?.wood  ?? 0) < hireTotalCost(slot).wood">🪵{{ hireTotalCost(slot).wood }}</span> }
+                  @if (hireTotalCost(slot).stone) { <span [class.lack]="(me()?.resources?.stone ?? 0) < hireTotalCost(slot).stone">🪨{{ hireTotalCost(slot).stone }}</span> }
+                  @if (hireTotalCost(slot).gold)  { <span [class.lack]="(me()?.resources?.gold  ?? 0) < hireTotalCost(slot).gold">💰{{ hireTotalCost(slot).gold }}</span> }
+                </div>
+                @if (isMyTurn() && gs.phase !== 'combat' && gs.phase !== 'init_roll') {
+                  <button class="hb-btn"
+                    [disabled]="gs.hireUsed || !canAffordSlot(slot)"
+                    (click)="onHired(i)">
+                    @if (gs.hireUsed) { уже нанимали }
+                    @else if (!canAffordSlot(slot)) { не хватает ресурсов }
+                    @else { Нанять }
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="board-wrap">
+          <app-board
+            [state]="gs"
+            [currentPlayerId]="curPlayer()!.id"
+            [isMyTurn]="isMyTurn()"
+            (tokenMoved)="onTokenMoved()"
+            (cellClicked)="onBoardCellClick($event)"
+          />
+        </div>
+
+      </div>
+
+      <!-- Right: players overview -->
+      <aside class="players-panel">
+        <div class="panel-title">Игроки</div>
+        @for (p of gs.players; track p.id) {
+          <div class="op-card" [class.active]="p.id === curPlayer()!.id" [style.border-left-color]="p.color">
+            <div class="op-header">
+              <span class="op-name" [style.color]="p.color">{{ p.name }}@if (p.id === me()?.id) { <span class="op-you">(вы)</span> }</span>
+              <span class="op-score">{{ p.score }} ★</span>
+              @if (p.id !== me()?.id && isMyTurn() && gs.phase !== 'combat' && !p.surrendered) {
+                <button class="op-trade-btn" (click)="openTradeWith(p.id)" title="Торговля">🤝</button>
+              }
+            </div>
+            <div class="op-resources">
+              <span>🪵 {{ p.resources.wood }}</span>
+              <span>🪨 {{ p.resources.stone }}</span>
+              <span>💰 {{ p.resources.gold }}</span>
+            </div>
+          </div>
+        }
+      </aside>
+
+    </main>
+
+    <!-- Garrison modal -->
+    @if (garrisonModalCell(); as cell) {
+        <div class="garrison-modal-backdrop" (click)="garrisonModal.set(null)"></div>
+        <div class="garrison-modal">
+          <div class="garrison-modal-title">{{ cellIcon(cell) }} Клетка #{{ cell.index }}</div>
+          <div class="army-slots">
+            @for (slot of garrisonSlots(garrisonModalIdx()); track $index; let i = $index) {
+              <div class="army-slot"
+                [class.occupied]="!!slot"
+                [class.drag-over]="!!dragSrc()"
+                [attr.draggable]="canRearrangeArmy() && !!slot ? true : null"
+                (dragstart)="onDragStart({kind:'garrison', cellIndex:garrisonModalIdx(), idx:i}, $event)"
+                (dragend)="dragSrc.set(null)"
+                (dragover)="onDragOver($event)"
+                (dragleave)="$event.preventDefault()"
+                (drop)="onDrop({kind:'garrison', cellIndex:garrisonModalIdx(), idx:i}, $event)">
+                @if (slot) {
+                  <div class="army-slot-name">{{ slot.count }}× {{ slot.unit.name }}</div>
+                  <div class="army-slot-stats">❤{{ slot.unit.hp }}/{{ slot.unit.maxHp }} ⚔{{ slot.unit.damageMin }}–{{ slot.unit.damageMax }}</div>
+                } @else {
+                  <div class="army-slot-empty">—</div>
+                }
+              </div>
+            }
+          </div>
+          <button class="army-modal-cancel" style="width:100%;margin-top:10px" (click)="garrisonModal.set(null)">Закрыть</button>
+        </div>
+    }
+
+    <!-- Army / garrison split/merge modal -->
+    @if (splitModal(); as m) {
+      <div class="army-modal-backdrop" (click)="splitModal.set(null)"></div>
+      <div class="army-modal">
+        <div class="army-modal-title">
+          {{ m.mode === 'split' ? 'Разделить отряд' : 'Слияние отрядов' }}
+        </div>
+        <div class="army-modal-body">
+          @if (m.mode === 'split') {
+            <div class="army-modal-info">
+              Перенести: <strong>{{ m.value }}</strong> из {{ m.fromCount }}
+            </div>
+          } @else {
+            <div class="army-modal-info">
+              <span>Слот А: <strong>{{ m.fromCount - m.value }}</strong></span>
+              <span class="merge-arrow">→</span>
+              <span>Слот Б: <strong>{{ m.toCount + m.value }}</strong></span>
+            </div>
+          }
+          <input type="range"
+            class="army-modal-slider"
+            [min]="m.mode === 'split' ? 1 : 0"
+            [max]="m.fromCount"
+            [value]="m.value"
+            (input)="setSplitValue(+$any($event.target).value)" />
+        </div>
+        <div class="army-modal-actions">
+          <button class="army-modal-cancel" (click)="splitModal.set(null)">Отмена</button>
+          <button class="army-modal-confirm" (click)="onSplitConfirm()">Подтвердить</button>
+        </div>
+      </div>
+    }
+
+    <!-- End turn button — fixed bottom-right -->
+    @if (isMyTurn() && gs.phase === 'free') {
+      <button class="btn-end-turn" (click)="endTurn()">✓ Завершить ход</button>
+    }
+
+    <footer class="log">
+      @for (entry of lastLog(); track $index) {
+        <span class="log-entry">{{ entry }}</span>
+      }
+    </footer>
+
+  </div>
+}

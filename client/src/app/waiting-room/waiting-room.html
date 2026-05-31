@@ -1,0 +1,34 @@
+<div class="waiting-room">
+  <h2>Комната: <span class="code">{{ ws.roomCode() }}</span></h2>
+
+  <p class="hint">Поделитесь кодом с другими игроками</p>
+
+  <h3>Игроки ({{ ws.players().length }}/4)</h3>
+  <ul class="players">
+    @for (p of ws.players(); track p.id; let i = $index) {
+      <li [class.host]="i === 0">
+        {{ i + 1 }}. {{ p.name }}
+        @if (i === 0) { <span class="badge">хост</span> }
+        ✓
+      </li>
+    }
+    @for (_ of empty(); track $index) {
+      <li class="empty">{{ ws.players().length + $index + 1 }}. ...</li>
+    }
+  </ul>
+
+  @if (ws.isHost()) {
+    <button
+      class="start-btn"
+      (click)="startGame()"
+      [disabled]="ws.players().length < 2"
+    >
+      Начать игру
+    </button>
+    @if (ws.players().length < 2) {
+      <p class="hint">Нужно минимум 2 игрока</p>
+    }
+  } @else {
+    <p class="hint">Ожидание хоста...</p>
+  }
+</div>

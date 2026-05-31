@@ -1,0 +1,77 @@
+.dice-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 55;
+}
+
+.dice-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 65;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 32px 48px;
+  font-family: monospace;
+  text-align: center;
+  border: 2px solid #f39c12;
+  min-width: 280px;
+}
+
+h3 { margin: 0 0 24px; font-size: 1.1rem; color: #f39c12; }
+
+.dice-area {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.dice-area.clickable { cursor: pointer; }
+.dice-area.clickable:hover .die { border-color: #f39c12; }
+
+.die {
+  width: 64px;
+  height: 64px;
+  border: 3px solid #888;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  background: #fff;
+  color: #1a1a2e;
+  transition: border-color 0.2s;
+  user-select: none;
+}
+
+.die.revealed {
+  border-color: #f39c12;
+  background: #fffde7;
+}
+
+@keyframes dice-spin {
+  0%   { transform: rotate(0deg)   scale(1); }
+  25%  { transform: rotate(90deg)  scale(1.2); }
+  50%  { transform: rotate(270deg) scale(0.85); }
+  75%  { transform: rotate(450deg) scale(1.1); }
+  100% { transform: rotate(720deg) scale(1); }
+}
+
+.die.rolling {
+  animation: dice-spin 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  border-color: #3498db;
+}
+
+.hint { color: #aaa; font-size: 0.85rem; margin: 0; }
+
+.result {
+  font-size: 1.3rem;
+  margin: 0;
+  color: #f39c12;
+}
+
+.ring-bonus { font-size: 0.75rem; color: #aaa; margin-left: 6px; }

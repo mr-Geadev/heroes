@@ -1,0 +1,36 @@
+<div class="lobby">
+  <h1>BOARD STRATEGY GAME</h1>
+
+  @if (ws.error()) {
+    <div class="error">{{ ws.error() }}</div>
+  }
+
+  <section class="panel">
+    <h2>Создать комнату</h2>
+    <label>
+      Имя
+      <input [(ngModel)]="createName" placeholder="Ваше имя" maxlength="20" />
+    </label>
+    <button (click)="createRoom()" [disabled]="!createName.trim()">
+      Создать комнату
+    </button>
+  </section>
+
+  <hr />
+
+  <section class="panel">
+    <h2>Присоединиться</h2>
+    <label>
+      Код
+      <input [(ngModel)]="joinCode" placeholder="ABC123" maxlength="6"
+             style="text-transform:uppercase" />
+    </label>
+    <label>
+      Имя
+      <input [(ngModel)]="joinName" placeholder="Ваше имя" maxlength="20" />
+    </label>
+    <button (click)="joinRoom()" [disabled]="!joinCode.trim() || !joinName.trim()">
+      Присоединиться
+    </button>
+  </section>
+</div>

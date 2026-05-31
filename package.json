@@ -1,0 +1,9 @@
+{
+  "name": "heroes-monorepo",
+  "private": true,
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "server": "npm run dev --workspace=server",
+    "client": "npm run start --workspace=client"
+  }
+}

@@ -1,0 +1,150 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 55;
+}
+
+.modal-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  z-index: 65;
+  background: #fff;
+  border: 2px solid #333;
+  padding: 24px 28px;
+  font-family: monospace;
+  min-width: 320px;
+  max-width: 440px;
+}
+
+.player-badge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.cell-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.cell-icon { font-size: 2.2rem; }
+
+.cell-title { font-size: 1rem; font-weight: bold; }
+.cell-sub   { font-size: 0.82rem; color: #888; margin-top: 2px; }
+
+.garrison-row {
+  font-size: 0.82rem;
+  color: #c0392b;
+  margin-bottom: 6px;
+}
+
+.reward-row {
+  font-size: 0.82rem;
+  color: #27ae60;
+  margin-bottom: 12px;
+}
+
+.event-desc {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  background: #f5f5f5;
+  padding: 10px;
+  margin-bottom: 16px;
+  border-left: 3px solid #f39c12;
+}
+
+.event-name {
+  font-size: 1.05rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.event-effect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #f5f5f5;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border-left: 3px solid #f39c12;
+  min-height: 38px;
+  align-items: center;
+}
+
+.effect-item {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.effect-item.positive { color: #27ae60; }
+.effect-item.negative { color: #c0392b; }
+
+.combat-log {
+  background: #1a1a2e;
+  color: #9b9;
+  padding: 6px 8px;
+  font-size: 0.72rem;
+  max-height: 100px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-action {
+  padding: 10px 18px;
+  font-family: monospace;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+}
+
+.btn-action:disabled { opacity: 0.4; cursor: default; }
+
+.btn-skip {
+  padding: 10px 14px;
+  font-family: monospace;
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  color: #555;
+}
+
+.warn { color: #c0392b; font-size: 0.78rem; margin: 6px 0 0; }
+
+.btn-join {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  font-family: monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: left;
+}
+.btn-join:hover { background: #3498db; }

@@ -1,0 +1,33 @@
+<div class="modal-backdrop" (click)="closed.emit()"></div>
+<div class="hire-box">
+  <div class="hire-header">
+    <span>🛒 Найм юнитов</span>
+    <button class="close-btn" (click)="closed.emit()">✕</button>
+  </div>
+
+  @if (army.length >= 5) {
+    <p class="full-warn">Армия заполнена (5/5)</p>
+  }
+
+  <div class="pool">
+    @for (slot of pool; track slot.unit.id; let i = $index) {
+      <div class="unit-card" [class.affordable]="canHire(slot)">
+        <div class="unit-name">
+          {{ slot.count > 1 ? slot.count + '× ' : '' }}{{ slot.unit.name }}
+        </div>
+        <div class="unit-stats">
+          <span>❤ {{ slot.unit.hp }}</span>
+          <span>⚔ {{ slot.unit.damageMin }}–{{ slot.unit.damageMax }}</span>
+        </div>
+        <div class="unit-cost">
+          @if (totalCost(slot).wood)  { <span [class.lacking]="myResources.wood  < totalCost(slot).wood">  🪵{{ totalCost(slot).wood }}</span>  }
+          @if (totalCost(slot).stone) { <span [class.lacking]="myResources.stone < totalCost(slot).stone">🪨{{ totalCost(slot).stone }}</span> }
+          @if (totalCost(slot).gold)  { <span [class.lacking]="myResources.gold  < totalCost(slot).gold"> 💰{{ totalCost(slot).gold }}</span>  }
+        </div>
+        <button class="hire-btn" (click)="hired.emit(i)" [disabled]="!canHire(slot)">
+          Нанять всех
+        </button>
+      </div>
+    }
+  </div>
+</div>

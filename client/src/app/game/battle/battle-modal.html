@@ -1,0 +1,92 @@
+<div class="battle-backdrop"></div>
+<div class="battle-box">
+  @if (activePlayerName) {
+    <div class="player-badge">{{ activePlayerName }}</div>
+  }
+
+  <div class="battle-header">
+    ⚔ Сражение
+    @if (!finished() && currentRound() > 0) {
+      <span class="round-label">Раунд {{ currentRound() }}</span>
+    }
+  </div>
+
+  @if (!finished()) {
+    <div class="armies">
+
+      <!-- Attackers -->
+      <div class="army atk">
+        <div class="army-title">Атакующие</div>
+        @for (u of atkSnaps(); track $index; let i = $index) {
+          @if (atkSnaps().length > 5 && i === 5) {
+            <div class="ally-divider">— Союзник —</div>
+          }
+          @if (u) {
+            <div class="unit-row"
+              [class.active-slot]="activeAtkSlot() === i"
+              [class.lunge-right]="lungeAtkSlot() === i"
+              [class.dead]="u.count <= 0">
+              <div class="unit-name">{{ u.count }}× {{ u.name }}</div>
+              <div class="unit-stats">
+                <span class="unit-hp">❤ {{ u.hp }}/{{ u.maxHp }}</span>
+                <span class="unit-dmg">⚔{{ u.damageMin }}–{{ u.damageMax }}</span>
+              </div>
+              <div class="hp-bar-bg">
+                <div class="hp-bar"
+                  [style.width.%]="hpPct(u)"
+                  [style.background]="hpColor(hpPct(u))">
+                </div>
+              </div>
+              @if (activeAtkSlot() === i && dmgOnAtk() !== null) {
+                <div class="dmg-popup dmg-incoming">−{{ dmgOnAtk() }}</div>
+              }
+            </div>
+          } @else {
+            <div class="unit-row unit-row-empty">—</div>
+          }
+        }
+      </div>
+
+      <div class="vs">⚔</div>
+
+      <!-- Defenders -->
+      <div class="army def">
+        <div class="army-title">Защитники</div>
+        @for (u of defSnaps(); track u.name; let i = $index) {
+          <div class="unit-row"
+            [class.active-slot]="activeDefSlot() === i"
+            [class.lunge-left]="lungeDefSlot() === i"
+            [class.dead]="u.count <= 0">
+            <div class="unit-name">{{ u.count }}× {{ u.name }}</div>
+            <div class="unit-stats">
+              <span class="unit-hp">❤ {{ u.hp }}/{{ u.maxHp }}</span>
+              <span class="unit-dmg">⚔{{ u.damageMin }}–{{ u.damageMax }}</span>
+            </div>
+            <div class="hp-bar-bg">
+              <div class="hp-bar"
+                [style.width.%]="hpPct(u)"
+                [style.background]="hpColor(hpPct(u))">
+              </div>
+            </div>
+            @if (activeDefSlot() === i && dmgOnDef() !== null) {
+              <div class="dmg-popup dmg-incoming">−{{ dmgOnDef() }}</div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+  @if (finished()) {
+    <div class="result" [class.won]="data.attackerWon" [class.lost]="!data.attackerWon">
+      {{ resultLabel() }}
+    </div>
+    @if (isMine) {
+      <button class="btn-continue" (click)="done.emit()">Продолжить →</button>
+    } @else {
+      <p class="waiting-hint">Ждём хода игрока...</p>
+    }
+  }
+
+</div>

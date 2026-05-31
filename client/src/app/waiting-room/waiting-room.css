@@ -1,0 +1,55 @@
+.waiting-room {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 24px;
+  border: 2px solid #333;
+  font-family: monospace;
+}
+
+h2 { margin-bottom: 4px; }
+h3 { margin: 20px 0 8px; }
+
+.code {
+  font-size: 1.4rem;
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: #00a;
+}
+
+.players {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.players li {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.players li.host { font-weight: bold; }
+.players li.empty { color: #aaa; }
+
+.badge {
+  font-size: 0.75rem;
+  background: #222;
+  color: #fff;
+  padding: 2px 6px;
+  margin-left: 6px;
+}
+
+.start-btn {
+  padding: 10px 24px;
+  font-family: monospace;
+  font-size: 1rem;
+  cursor: pointer;
+  background: #222;
+  color: #fff;
+  border: none;
+  display: block;
+  width: 100%;
+}
+
+.start-btn:disabled { opacity: 0.4; cursor: default; }
+
+.hint { color: #888; font-size: 0.85rem; margin-top: 8px; }

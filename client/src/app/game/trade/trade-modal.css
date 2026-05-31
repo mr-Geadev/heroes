@@ -1,0 +1,250 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 55;
+}
+
+.modal-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 65;
+  background: #fff;
+  border: 2px solid #333;
+  padding: 16px 20px;
+  font-family: monospace;
+  width: min(920px, 96vw);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.trade-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+}
+
+.field-row select {
+  font-family: monospace;
+  padding: 4px 6px;
+  border: 1px solid #999;
+  flex: 1;
+}
+
+.sender-label {
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+/* ── 4-column grid ── */
+.four-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* Inventory columns (1 & 4) */
+.inv-col {
+  border: 1px solid #ddd;
+  padding: 8px;
+  background: #fafafa;
+  min-height: 120px;
+}
+
+/* Offer columns (2 & 3) */
+.offer-col {
+  border: 2px dashed #bbb;
+  padding: 8px;
+  background: #f5f9ff;
+  min-height: 120px;
+}
+
+.offer-give { background: #f0fff4; border-color: #27ae60; }
+.offer-want { background: #fff5f0; border-color: #e67e22; }
+
+.col-title {
+  font-weight: bold;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 3px;
+}
+
+.sub-label {
+  font-size: 0.68rem;
+  color: #888;
+  text-transform: uppercase;
+  margin: 6px 0 3px;
+}
+
+/* Inventory items */
+.inv-item {
+  font-size: 0.82rem;
+  padding: 3px 5px;
+  margin-bottom: 2px;
+  border-radius: 3px;
+  background: #fff;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.inv-item.clickable {
+  cursor: pointer;
+  border-color: #ddd;
+}
+
+.inv-item.clickable:hover { background: #e8f4fd; border-color: #3498db; }
+.inv-item.selected { background: #d5f0dc; border-color: #27ae60; }
+
+/* Offer items with slider */
+.offer-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+
+.offer-item input[type=range] {
+  flex: 1;
+  min-width: 0;
+  accent-color: #2c3e50;
+}
+
+.offer-item .qty {
+  min-width: 20px;
+  text-align: right;
+  font-weight: bold;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #c00;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.offer-ro {
+  font-size: 0.82rem;
+  padding: 3px 5px;
+  margin-bottom: 3px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 3px;
+}
+
+.empty-hint {
+  font-size: 0.75rem;
+  color: #aaa;
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* ── Promise ── */
+.promise-section { margin-bottom: 10px; }
+.promise-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+
+.promise-opt {
+  padding: 5px 9px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.promise-opt.active { background: #8e44ad; color: #fff; border-color: #8e44ad; }
+
+.promise-clear {
+  padding: 4px 8px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  border: 1px solid #ccc;
+  background: #fee;
+  cursor: pointer;
+  color: #c00;
+}
+
+.promise-ro {
+  font-size: 0.82rem;
+  color: #8e44ad;
+  margin-bottom: 10px;
+}
+
+/* ── Actions ── */
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-submit {
+  padding: 8px 18px;
+  font-family: monospace;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-submit:disabled { opacity: 0.4; cursor: default; }
+
+.btn-cancel {
+  padding: 8px 14px;
+  font-family: monospace;
+  background: #eee;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.btn-accept {
+  padding: 8px 18px;
+  font-family: monospace;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-counter {
+  padding: 8px 14px;
+  font-family: monospace;
+  background: #e67e22;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-reject {
+  padding: 8px 14px;
+  font-family: monospace;
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
