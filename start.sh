@@ -67,8 +67,8 @@ done
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}  App is running!${NC}"
-echo -e "${GREEN}  Client  → http://$(hostname -I | awk '{print $1}'):4200${NC}"
-echo -e "${GREEN}  Server  → ws://$(hostname -I | awk '{print $1}'):3001${NC}"
+echo -e "${GREEN}  Client  → http://194.67.101.169:4200${NC}"
+echo -e "${GREEN}  Server  → ws://194.67.101.169:3001${NC}"
 echo -e "${GREEN}  Ctrl+C to stop${NC}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
