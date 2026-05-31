@@ -327,7 +327,7 @@
     @if (garrisonModalCell(); as cell) {
         <div class="garrison-modal-backdrop" (click)="garrisonModal.set(null)"></div>
         <div class="garrison-modal">
-          <div class="garrison-modal-title">{{ cellIcon(cell) }} Клетка #{{ cell.index }}</div>
+          <div class="garrison-modal-title">{{ cellIcon(cell) }} {{ cell.name ?? 'Клетка #' + cell.index }}</div>
           <div class="army-slots">
             @for (slot of garrisonSlots(garrisonModalIdx()); track $index; let i = $index) {
               <div class="army-slot"

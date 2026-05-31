@@ -87,7 +87,9 @@ export class Game implements OnInit, OnDestroy {
 
   protected readonly myOwnedCells = computed(() => {
     const s = this.state(); const myId = this.ws.playerId();
-    return (s?.board ?? []).filter(c => c.type === 'resource' && c.owner === myId);
+    return (s?.board ?? []).filter(c =>
+      (c.type === 'resource' || c.type === 'start') && c.owner === myId
+    );
   });
 
   protected garrisonSlots(cellIndex: number): (ArmySlot | null)[] {
@@ -96,6 +98,7 @@ export class Game implements OnInit, OnDestroy {
   }
 
   protected cellIcon(cell: Cell): string {
+    if (cell.type === 'start') return '🏰';
     if (cell.resourceType === 'wood')  return '🪵';
     if (cell.resourceType === 'stone') return '🪨';
     return '💰';
@@ -119,7 +122,7 @@ export class Game implements OnInit, OnDestroy {
 
   protected onBoardCellClick(cellIndex: number): void {
     const cell = this.state()?.board[cellIndex];
-    if (cell?.type === 'resource' && cell.owner === this.ws.playerId()) {
+    if ((cell?.type === 'resource' || cell?.type === 'start') && cell.owner === this.ws.playerId()) {
       this.garrisonModal.set(cellIndex);
     }
   }

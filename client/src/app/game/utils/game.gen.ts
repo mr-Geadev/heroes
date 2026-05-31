@@ -48,6 +48,7 @@ export function generateGameState(players: PlayerInfo[]): GameState {
     const idx = assignedPositions[i];
     board[idx].owner = p.id;
     board[idx].name = `Город ${p.name}`;
+    board[idx].playerGarrison = Array(5).fill(null);
   });
   START_POSITIONS.filter(idx => !assignedPositions.includes(idx)).forEach(idx => {
     board[idx].name = 'Заброшенный замок';
@@ -63,7 +64,7 @@ export function generateGameState(players: PlayerInfo[]): GameState {
     hirePool: Array.from({ length: 4 }, () => makeHireSlot()),
     hireUsed: false,
     maxTurns: 120,
-    winScore: 20,
+    winScore: 40,
     log: ['Игра началась! Бросаем кубики для определения очерёдности...'],
     initRolls: {},
   };

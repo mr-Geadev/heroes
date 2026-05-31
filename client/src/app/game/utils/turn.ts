@@ -82,7 +82,8 @@ export function simulateCombat(
   rawAttackers: (ArmySlot | null)[],
   rawDefenders: ArmySlot[],
   godMode = false,
-  rawAlly?: (ArmySlot | null)[]
+  rawAlly?: (ArmySlot | null)[],
+  atkDamageMult = 1.0
 ): Omit<CombatData, 'cellIndex' | 'combatType' | 'allyPlayerId'> {
   // Compact working arrays + position maps (compactIdx → original slot 0-4)
   const posMap: number[] = [];
@@ -174,7 +175,8 @@ export function simulateCombat(
       }
 
       // Primary attack
-      const dmg = rollSlotDamage(mySlot);
+      let dmg = rollSlotDamage(mySlot);
+      if (isAtkSide && atkDamageMult !== 1.0) dmg = Math.max(1, Math.floor(dmg * atkDamageMult));
       if (!(godMode && isAtkSide)) {
         tSideArr[tIdx] = applyDamageToSlot(tSideArr[tIdx], dmg);
       }
@@ -633,11 +635,13 @@ export function acceptJoint(state: GameState): GameState {
       ? (cell.playerGarrison ?? []).filter((sl): sl is ArmySlot => sl !== null)
       : (cell.garrison ?? []);
 
+  const mult = req.combatType === 'city' ? 0.5 : 1.0;
   const sim = simulateCombat(
     applyArtifactBonuses(attacker.army, attacker.artifacts),
     defenders,
     s.godMode,
-    applyArtifactBonuses(ally.army, ally.artifacts)
+    applyArtifactBonuses(ally.army, ally.artifacts),
+    mult
   );
   s.combatData = { ...sim, cellIndex: req.cellIndex, combatType: req.combatType, allyPlayerId: req.to };
   delete s.jointRequest;
@@ -679,7 +683,7 @@ export function startCityCapture(state: GameState, cellIndex: number): GameState
     return s;
   }
 
-  const sim = simulateCombat(applyArtifactBonuses(p.army, p.artifacts), defenders, s.godMode);
+  const sim = simulateCombat(applyArtifactBonuses(p.army, p.artifacts), defenders, s.godMode, undefined, 0.5);
   s.combatData = { ...sim, cellIndex, combatType: 'city' };
   s.phase = 'combat';
   s.log.push(`${p.name} атакует ${cell.name ?? 'город'}`);
