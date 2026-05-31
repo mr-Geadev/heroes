@@ -266,7 +266,7 @@ Server→Client: room:created, room:self, room:player_joined, room:player_left, 
 ## Победа
 
 - Первый до **20 очков** — победа.
-- После **30 ходов** — победитель по очкам (тай → по сумме ресурсов).
+- После **120 ходов** — победитель по очкам (тай → по сумме ресурсов).
 - Сдача: клетки → нейтральные, армия распускается, ход передаётся.
 - Игрок без собственных городов после поражения в бою — выбывает автоматически.
 
@@ -300,7 +300,7 @@ interface GameState {
   pendingEvent?: PendingEvent;
   jointRequest?: JointRequest;
   godMode?: boolean;
-  maxTurns: number;   // 30
+  maxTurns: number;   // 120
   winScore: number;   // 20
   log: string[];
 }
