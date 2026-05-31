@@ -35,7 +35,8 @@ export class WebsocketService {
 
   connect(): void {
     if (this.ws) return;
-    this.ws = new WebSocket('ws://localhost:3001');
+    const wsHost = window.location.hostname;
+    this.ws = new WebSocket(`ws://${wsHost}:3001`);
 
     this.ws.onopen = () => {
       this.pending.forEach(m => this.ws!.send(m));
